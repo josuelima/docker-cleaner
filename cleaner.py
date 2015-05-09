@@ -8,6 +8,7 @@
 # Author: Josue Lima <josuedsi@gmail.com>
 
 import sys
+import yaml
 from docker import Client
 
 client = Client(base_url='unix://var/run/docker.sock')
@@ -15,12 +16,12 @@ client = Client(base_url='unix://var/run/docker.sock')
 def should_remove_container(status):
   """
   Given that we want to remove all obsolet containers (=not running)
-  return True to all container statuses not containing Up
+  return True to all container statuses not containing 'Up'
   """
   return not status.startswith('Up')
 
 def remove_container(container):
-  """ Remove container given the container Id"""
+  """ Remove container given the container Id """
   #containers.remove_container(container = container['Id'])
   print "remove this"
 
@@ -34,8 +35,12 @@ def should_remove_image(image, containers):
 
   return True
 
+def remove_image(image):
+  """ Remove image given the image Id """
+  client.remove_image(image = image['Id'], force = True)
+
 def clear_containers():
-  """ Search for all containers to remove those not running"""
+  """ Search for all containers to remove those not running """
   for container in client.containers(all = True):
     if should_remove_container(container['Status']): remove_container(container)
 
@@ -48,3 +53,9 @@ def clear_images():
 
   for image in client.images():
     if should_delete_image(image, running_containers): remove_image(image)
+
+if __name__ == '__main__':
+  configs = yaml.load(open('settings.yml', 'r'))
+
+  if configs['clear_containers']: clear_containers()
+  if configs['clear_images']: clear_images()
