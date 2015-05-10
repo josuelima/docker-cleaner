@@ -19,9 +19,11 @@ def should_remove_container(status):
   return not status.startswith('Up')
 
 def remove_container(container):
-  """ Remove container given the container Id """
-  #client.remove_container(container = container['Id'])
-  print "remove this"
+  """ Try to remove container given the container Id """
+  try:
+    client.remove_container(container = container['Id'])
+  except:
+    log_error("container", container)
 
 def should_remove_image(image, containers):
   """
@@ -34,8 +36,11 @@ def should_remove_image(image, containers):
   return True
 
 def remove_image(image):
-  """ Remove image given the image Id """
-  client.remove_image(image = image['Id'], force = True)
+  """ Try to remove image given the image Id """
+  try:
+    client.remove_image(image = image['Id'], force = True)
+  except:
+    log_error("image", image)
 
 def clear_containers():
   """ Search for all containers in order to remove those not running """
@@ -51,6 +56,9 @@ def clear_images():
 
   for image in client.images():
     if should_delete_image(image, running_containers): remove_image(image)
+
+def log_error(kind, instance):
+  print "Could not remove %s %s. Maybe it's running or in a Dead state" % (kind, instance['Id'])
 
 if __name__ == '__main__':
   configs = yaml.load(open('settings.yml', 'r'))
