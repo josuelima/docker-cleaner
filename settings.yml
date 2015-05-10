@@ -1,2 +1,3 @@
 clear_containers: true
-clear_images: true
+clear_images: false
+docker_endpoint: "unix://var/run/docker.sock"

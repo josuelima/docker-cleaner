@@ -11,8 +11,6 @@ import sys
 import yaml
 from docker import Client
 
-client = Client(base_url='unix://var/run/docker.sock')
-
 def should_remove_container(status):
   """
   Given that we want to remove all obsolet containers (=not running)
@@ -22,7 +20,7 @@ def should_remove_container(status):
 
 def remove_container(container):
   """ Remove container given the container Id """
-  #containers.remove_container(container = container['Id'])
+  #client.remove_container(container = container['Id'])
   print "remove this"
 
 def should_remove_image(image, containers):
@@ -40,13 +38,13 @@ def remove_image(image):
   client.remove_image(image = image['Id'], force = True)
 
 def clear_containers():
-  """ Search for all containers to remove those not running """
+  """ Search for all containers in order to remove those not running """
   for container in client.containers(all = True):
     if should_remove_container(container['Status']): remove_container(container)
 
 def clear_images():
   """
-  Search for images to remove those which
+  Search for images in order to remove those which
   doesn't have containers instances running
   """
   running_containers = client.containers()
@@ -56,6 +54,14 @@ def clear_images():
 
 if __name__ == '__main__':
   configs = yaml.load(open('settings.yml', 'r'))
+
+  """ Try to connect to docker endpoint (socket/port) modify in configs.yml """
+  try:
+    client = Client(base_url = configs['docker_endpoint'])
+    client.ping()
+  except:
+    print "Could not connect to Docker. Verify if docker is running or your configs.yml file"
+    sys.exit()
 
   if configs['clear_containers']: clear_containers()
   if configs['clear_images']: clear_images()
