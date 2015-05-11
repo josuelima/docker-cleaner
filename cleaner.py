@@ -22,6 +22,7 @@ def remove_container(container):
   """ Try to remove container given the container Id """
   try:
     client.remove_container(container = container['Id'])
+    log("Removing container: %s" % container['Id'])
   except:
     log_error("container", container)
 
@@ -39,6 +40,7 @@ def remove_image(image):
   """ Try to remove image given the image Id """
   try:
     client.remove_image(image = image['Id'], force = True)
+    log("Removing image: %s" % image['Id'])
   except:
     log_error("image", image)
 
@@ -55,15 +57,18 @@ def clear_images():
   running_containers = client.containers()
 
   for image in client.images():
-    if should_delete_image(image, running_containers): remove_image(image)
+    if should_remove_image(image, running_containers): remove_image(image)
+
+def log(message):
+  print message
 
 def log_error(kind, instance):
-  print "Could not remove %s %s. Maybe it's running or in a Dead state" % (kind, instance['Id'])
+  log("Could not remove %s %s." % (kind, instance['Id']))
 
 if __name__ == '__main__':
   configs = yaml.load(open('settings.yml', 'r'))
 
-  """ Try to connect to docker endpoint (socket/port) modify in configs.yml """
+  """ Try to connect to docker endpoint (socket/port) """
   try:
     client = Client(base_url = configs['docker_endpoint'])
     client.ping()
