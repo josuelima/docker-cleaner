@@ -1,12 +1,13 @@
 #!/usr/bin/python
 #
-# DOCKER CLEANER
-# Keep your environment clean by removing all obsolete Docker images and containers
-#
-# For more information visit: github.com/josuelima/docker-cleaner
-#
-# Author: Josue Lima <josuedsi@gmail.com>
+# * DOCKER CLEANER
+# * Keep your environment clean by removing all obsolete Docker images and containers
+# *
+# * For more information visit: github.com/josuelima/docker-cleaner
+# *
+# * Author: Josue Lima <josuedsi@gmail.com>
 
+import os
 import sys
 import yaml
 from docker import Client
@@ -21,8 +22,8 @@ class Cleaner:
     try:
       self.client.ping()
     except:
-      self.log("Could not connect to Docker. Verify if docker is running or your settings file")
-      return
+      Logger.log("Could not connect to Docker. Verify if docker is running or your settings file")
+      exit()
 
     if self.configs['clear_containers']: self.clear_containers()
     if self.configs['clear_images']: self.clear_images()
@@ -38,9 +39,9 @@ class Cleaner:
     """ Try to remove container given the container Id """
     try:
       self.client.remove_container(container = container['Id'])
-      self.log("Removing container: %s" % container['Id'])
+      Logger.log("Removing container: %s" % container['Id'])
     except:
-      self.log_error("container", container)
+      Logger.log_container_error("container", container)
 
   def should_remove_image(self, image, containers):
     """
@@ -56,9 +57,9 @@ class Cleaner:
     """ Try to remove image given the image Id """
     try:
       self.client.remove_image(image = image['Id'], force = True)
-      self.log("Removing image: %s" % image['Id'])
+      Logger.log("Removing image: %s" % image['Id'])
     except:
-      self.log_error("image", image)
+      Logger.log_container_error("image", image)
 
   def clear_containers(self):
     """ Search for all containers in order to remove those not running """
@@ -75,12 +76,27 @@ class Cleaner:
     for image in self.client.images():
       if self.should_remove_image(image, running_containers): self.remove_image(image)
 
+class Logger:
+  """ Simple helper to output errors to stdout """
+
+  @classmethod
   def log(self, message):
+    """ Using stdout as logger for now """
     print message
 
-  def log_error(self, kind, instance):
-    self.log("Could not remove %s %s." % (kind, instance['Id']))
+  @classmethod
+  def log_container_error(self, kind, instance):
+    Logger.log("Could not remove %s %s." % (kind, instance['Id']))
 
 if __name__ == '__main__':
-  configs = yaml.load(open('settings.yml', 'r'))
+  if len(sys.argv) > 1:
+    path = os.path.join(sys.argv[1], 'settings.yml')
+  else:
+    path = 'settings.yml'
+
+  if not os.path.isfile(path):
+    Logger.log("%s doesn't exists" % path)
+    exit()
+
+  configs = yaml.load(open(path, 'r'))
   Cleaner(configs)
