@@ -6,8 +6,10 @@
 # * For more information visit: github.com/josuelima/docker-cleaner
 # *
 # * This script will install a crontab to run docker-cleaner
-# * By default it will run one time a day, every day
+# * It will execute create a cronjob to execute the cleaner every minute
 # * For more info on crontab: https://help.ubuntu.com/community/CronHowto
+# *
+# * This script is just a sugestion. You should customize it accordingly to your needs.
 # *
 # * Author: Josue Lima <josuedsi@gmail.com>
 

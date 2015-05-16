@@ -95,7 +95,7 @@ if __name__ == '__main__':
     path = 'settings.yml'
 
   if not os.path.isfile(path):
-    Logger.log("%s doesn't exists" % path)
+    Logger.log("%s doesn't exist" % path)
     exit()
 
   configs = yaml.load(open(path, 'r'))
